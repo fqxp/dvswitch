@@ -78,6 +78,8 @@ void dv_selector_widget::set_source_count(unsigned count)
 	try
 	{
 	    thumbnails_.resize(count);
+            pri_video_buttons_.resize(count);
+            sec_video_buttons_.resize(count);
 
 	    for (mixer::source_id i = first_new_source_id; i != count; ++i)
 	    {
@@ -116,7 +118,6 @@ void dv_selector_widget::set_source_count(unsigned count)
 		       row + row_text_label, row + row_text_label + 1,
 		       Gtk::FILL, Gtk::FILL,
 		       0, 0);
-
 		Gtk::RadioButton * pri_video_button =
 		    create_radio_button(pri_video_button_group_,
 					pri_video_source_pixbuf_);
@@ -132,6 +133,7 @@ void dv_selector_widget::set_source_count(unsigned count)
 		       row + row_pri_video_button + 1,
 		       Gtk::FILL, Gtk::FILL,
 		       0, 0);
+                pri_video_buttons_[i] = pri_video_button;
 
 		Gtk::RadioButton * sec_video_button =
 		    create_radio_button(sec_video_button_group_,
@@ -148,6 +150,7 @@ void dv_selector_widget::set_source_count(unsigned count)
 		       row + row_sec_video_button + 1,
 		       Gtk::FILL, Gtk::FILL,
 		       0, 0);
+                sec_video_buttons_[i] = sec_video_button;
 
 		Gtk::RadioButton * audio_button =
 		    create_radio_button(audio_button_group_,
@@ -265,3 +268,12 @@ void dv_selector_widget::on_audio_selected(mixer::source_id source_id)
     audio_selected_signal_(source_id);
 }
 
+void dv_selector_widget::select_pri_video_source(mixer::source_id source_id)
+{
+    pri_video_buttons_[source_id]->set_active();
+}
+
+void dv_selector_widget::select_sec_video_source(mixer::source_id source_id)
+{
+    sec_video_buttons_[source_id]->set_active();
+}

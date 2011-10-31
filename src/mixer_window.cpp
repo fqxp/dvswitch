@@ -74,6 +74,7 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
       fade_button_(effect_group_, gettext("Fa_de"), true),
       fade_value_(300, 15000, 100),
       apply_button_("gtk-apply"),
+      switch_a_b_button_(gettext("Switch A/B")),
       vu_meter_(-56, 0),
       pri_video_source_id_(0),
       sec_video_source_id_(0),
@@ -170,6 +171,16 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
 
     progress_.show();
 
+    switch_a_b_button_.signal_clicked().connect(
+        sigc::mem_fun(this, &mixer_window::switch_pri_sec_video_sources));
+    switch_a_b_button_.add_accelerator("clicked",
+                                       get_accel_group(),
+                                       'm',
+                                       Gdk::ModifierType(0),
+                                       Gtk::AccelFlags(0));
+    switch_a_b_button_.set_sensitive(false);
+    switch_a_b_button_.show();
+
     meter_sep_.show();
 
     vu_meter_.show();
@@ -200,6 +211,7 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
     command_box_.pack_start(fade_button_, Gtk::PACK_SHRINK);
     command_box_.pack_start(fade_value_, Gtk::PACK_SHRINK);
     command_box_.pack_start(progress_, Gtk::PACK_SHRINK);
+    command_box_.pack_start(switch_a_b_button_, Gtk::PACK_SHRINK);
     command_box_.pack_start(meter_sep_, Gtk::PACK_EXPAND_PADDING);
     command_box_.pack_start(vu_meter_, Gtk::PACK_EXPAND_WIDGET);
     command_box_.show();
@@ -366,6 +378,27 @@ void mixer_window::set_sec_video_source(mixer::source_id id)
     }
 }
 
+void mixer_window::switch_pri_sec_video_sources()
+{
+    if (pri_video_source_id_ == sec_video_source_id_)
+    {    
+        return;
+    }
+
+    mixer::source_id tmp_id = pri_video_source_id_;
+    pri_video_source_id_ = sec_video_source_id_;
+    sec_video_source_id_ = tmp_id;
+
+    selector_.select_pri_video_source(pri_video_source_id_);
+    selector_.select_sec_video_source(sec_video_source_id_);
+    
+    if (pip_active_) {
+        mixer_.set_video_mix(
+            mixer_.create_video_mix_pic_in_pic(
+                pri_video_source_id_, sec_video_source_id_, display_.get_selection()));
+    }
+}
+
 void mixer_window::put_frames(unsigned source_count,
 			      const dv_frame_ptr * source_dv,
 			      mixer::mix_settings mix_settings,
@@ -429,6 +462,7 @@ bool mixer_window::update(Glib::IOCondition) throw()
 	none_button_.set_sensitive(count >= 1);
 	pip_button_.set_sensitive(count >= 2);
 	fade_button_.set_sensitive(count >= 2);
+        switch_a_b_button_.set_sensitive(count >= 2);
 
 	// Update the thumbnail displays of sources.  If a new mixed frame
 	// arrives while we were doing this, return to the event loop.

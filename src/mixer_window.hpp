@@ -54,6 +54,7 @@ private:
 
     void set_pri_video_source(mixer::source_id);
     void set_sec_video_source(mixer::source_id);
+    void switch_pri_sec_video_sources();
 
     virtual void put_frames(unsigned source_count,
 			    const dv_frame_ptr * source_dv,
@@ -86,6 +87,7 @@ private:
     Gtk::HScale fade_value_;
     Gtk::Button apply_button_;
     Gtk::ProgressBar progress_;
+    Gtk::Button switch_a_b_button_;
     Gtk::HSeparator meter_sep_;
     vu_meter vu_meter_;
     status_overlay osd_;

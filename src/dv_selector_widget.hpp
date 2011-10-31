@@ -30,6 +30,8 @@ public:
     sigc::signal1<void, mixer::source_id> & signal_pri_video_selected();
     sigc::signal1<void, mixer::source_id> & signal_sec_video_selected();
     sigc::signal1<void, mixer::source_id> & signal_audio_selected();
+    void select_pri_video_source(mixer::source_id source_id);
+    void select_sec_video_source(mixer::source_id source_id);
 
 private:
     Gtk::RadioButton * create_radio_button(
@@ -50,6 +52,8 @@ private:
     Gtk::RadioButtonGroup audio_button_group_;
     sigc::signal1<void, mixer::source_id> audio_selected_signal_;
     std::vector<dv_thumb_display_widget *> thumbnails_;
+    std::vector<Gtk::RadioButton *> pri_video_buttons_;
+    std::vector<Gtk::RadioButton *> sec_video_buttons_;
 };
 
 #endif // !defined(DVSWITCH_DV_SELECTOR_WIDGET_HPP)
