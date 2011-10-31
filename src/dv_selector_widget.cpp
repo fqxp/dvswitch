@@ -186,12 +186,12 @@ void dv_selector_widget::set_source_count(unsigned count)
 		    sec_video_button->add_accelerator("activate",
 						      accel_group_,
 						      '1' + i,
-						      Gdk::SHIFT_MASK,
+						      Gdk::CONTROL_MASK,
 						      Gtk::AccelFlags(0));
 		    sec_video_button->add_accelerator("activate",
 						      accel_group_,
 						      GDK_KP_1 + i,
-						      Gdk::SHIFT_MASK,
+						      Gdk::CONTROL_MASK,
 						      Gtk::AccelFlags(0));
 		    sec_video_button->signal_activate().connect(
 			sigc::bind(
