@@ -280,6 +280,7 @@ void dv_full_display_widget::set_selection_enabled(bool flag)
     Glib::RefPtr<Gdk::Window> window(get_window());
 
     sel_enabled_ = flag;
+    sel_type_ = dv_full_display_widget::Manual;
 
     if (sel_enabled_)
     {
@@ -304,11 +305,6 @@ void dv_full_display_widget::set_selection_type(SelectionType sel_type)
     int frame_width = source_region_.right - source_region_.left;
     int frame_height = source_region_.bottom - source_region_.top;
     float aspect_ratio = ((float) frame_width) / frame_height;
-    printf("aspect ratio: %f\n", aspect_ratio);
-    printf("source_region: left/right, top/bottom %d/%d, %d/%d\n", 
-           source_region_.left, source_region_.right,
-           source_region_.top, source_region_.bottom);
-    printf("frame width, height: %d, %d\n", frame_width, frame_height);
     int padding_x = 10;
     int padding_y = 10;
     switch (sel_type) {
@@ -343,11 +339,18 @@ void dv_full_display_widget::set_selection_type(SelectionType sel_type)
     sel_enabled_ = true;
 
     queue_draw();
+
+    updated_selection_.emit(sel_type_);
 }
 
 rectangle dv_full_display_widget::get_selection()
 {
     return selection_;
+}
+
+dv_full_display_widget::type_updated_selection dv_full_display_widget::signal_updated_selection()
+{
+    return updated_selection_;
 }
 
 bool dv_full_display_widget::try_init_xvideo(PixelFormat pix_fmt,
@@ -718,6 +721,7 @@ bool dv_full_display_widget::on_button_release_event(GdkEventButton * event)
     {
 	sel_in_progress_ = false;
 	remove_modal_grab();
+        updated_selection_.emit(dv_full_display_widget::Manual);
 	return true;
     }
 

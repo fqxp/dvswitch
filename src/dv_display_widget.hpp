@@ -70,15 +70,22 @@ public:
         North_East,
         South_East,
         South_West,
+        SelectionType_First = Manual,
+        SelectionType_Last = South_West
     };
 
     dv_full_display_widget();
 
     void set_selection_enabled(bool);
     void set_selection_type(SelectionType sel_type);
-    //void set_selection();
     void set_selection();
     rectangle get_selection();
+
+    typedef sigc::signal<void, SelectionType> type_updated_selection;
+    type_updated_selection signal_updated_selection();
+
+protected:
+    type_updated_selection updated_selection_;
 
 private:
     bool try_init_xvideo(PixelFormat pix_fmt, unsigned height) throw();

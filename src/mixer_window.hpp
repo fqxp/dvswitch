@@ -41,6 +41,8 @@ public:
     mixer_window(mixer & mixer, connector & connector);
     ~mixer_window();
 
+    void on_updated_selection(dv_full_display_widget::SelectionType sel_type);
+
 private:
     void cancel_effect();
     void begin_pic_in_pic();
@@ -67,6 +69,7 @@ private:
     connector & connector_;
 
     Gtk::VBox main_box_;
+
     Gtk::MenuBar menu_bar_;
     Gtk::MenuItem file_menu_item_;
     Gtk::Menu file_menu_;
@@ -88,12 +91,18 @@ private:
     Gtk::Button apply_button_;
     Gtk::ProgressBar progress_;
     Gtk::Button switch_a_b_button_;
-    Gtk::HBox selection_type_box_;
-    Gtk::Button set_selection_nw_button_;
-    Gtk::Button set_selection_ne_button_;
-    Gtk::Button set_selection_se_button_;
-    Gtk::Button set_selection_sw_button_;
-    Gtk::Button set_selection_center_button_;
+    Gtk::RadioButtonGroup selection_group_;
+    Gtk::VBox pip_box_;
+    Gtk::HBox pip_selection_upper_box_;
+    Gtk::Label pip_label_;
+    Gtk::RadioButton set_selection_manual_button_;
+    Gtk::HBox pip_selection_lower_box_;
+    Gtk::RadioButton set_selection_nw_button_;
+    Gtk::RadioButton set_selection_ne_button_;
+    Gtk::RadioButton set_selection_se_button_;
+    Gtk::RadioButton set_selection_sw_button_;
+    Gtk::RadioButton set_selection_center_button_;
+    Gtk::RadioButton set_selection_dummy_button_;
     Gtk::HSeparator meter_sep_;
     vu_meter vu_meter_;
     status_overlay osd_;

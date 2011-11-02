@@ -75,13 +75,17 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
       fade_value_(300, 15000, 100),
       apply_button_("gtk-apply"),
       switch_a_b_button_(gettext("Switch A/B")),
-      //test_set_selection_pip_(gettext("Test selection")),
-      selection_type_box_(true, 0),
-      set_selection_nw_button_(gettext("NW")),
-      set_selection_ne_button_(gettext("NE")),
-      set_selection_se_button_(gettext("SE")),
-      set_selection_sw_button_(gettext("SW")),
-      set_selection_center_button_(gettext("C")),
+      pip_box_(true, 0),
+      pip_selection_upper_box_(true, 0),
+      pip_label_(gettext("Pic-in-pic")),
+      set_selection_manual_button_(selection_group_, gettext("Select manually")),
+      pip_selection_lower_box_(true, 0),
+      set_selection_nw_button_(selection_group_, gettext("NW")),
+      set_selection_ne_button_(selection_group_, gettext("NE")),
+      set_selection_se_button_(selection_group_, gettext("SE")),
+      set_selection_sw_button_(selection_group_, gettext("SW")),
+      set_selection_center_button_(selection_group_, gettext("C")),
+      set_selection_dummy_button_(selection_group_, gettext("dummy")),
       vu_meter_(-56, 0),
       pri_video_source_id_(0),
       sec_video_source_id_(0),
@@ -136,7 +140,7 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
 
     none_button_.set_mode(/*draw_indicator=*/false);
     none_button_.set_sensitive(false);
-    none_button_.signal_clicked().connect(
+    none_button_.signal_toggled().connect(
 	sigc::mem_fun(this, &mixer_window::cancel_effect));
     none_button_.add_accelerator("activate",
 				 get_accel_group(),
@@ -147,13 +151,13 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
 
     pip_button_.set_mode(/*draw_indicator=*/false);
     pip_button_.set_sensitive(false);
-    pip_button_.signal_clicked().connect(
-	sigc::mem_fun(this, &mixer_window::begin_pic_in_pic));
+    pip_button_.signal_toggled().connect(
+        sigc::mem_fun(this, &mixer_window::begin_pic_in_pic));
     pip_button_.show();
 
     fade_button_.set_mode(/*draw_indicator=*/false);
     fade_button_.set_sensitive(false);
-    fade_button_.signal_clicked().connect(
+    fade_button_.signal_toggled().connect(
         sigc::mem_fun(this, &mixer_window::begin_fade));
     fade_button_.show();
 
@@ -188,47 +192,78 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
     switch_a_b_button_.set_sensitive(false);
     switch_a_b_button_.show();
 
+    set_selection_dummy_button_.set_active(true);
+
+    pip_label_.set_justify(Gtk::JUSTIFY_LEFT);
+    set_selection_manual_button_.set_mode(/*draw_indicator=*/false);
+    set_selection_manual_button_.signal_clicked().connect(
+        sigc::bind<bool>(
+            sigc::mem_fun(display_,
+                          &dv_full_display_widget::set_selection_enabled),
+            true));
+
+    pip_selection_upper_box_.pack_start(pip_label_, Gtk::PACK_SHRINK);
+    pip_selection_upper_box_.pack_start(set_selection_manual_button_, Gtk::PACK_EXPAND_PADDING);
+    pip_selection_upper_box_.show_all();
+
+    set_selection_nw_button_.set_mode(/*draw_indicator=*/false);
     set_selection_nw_button_.signal_clicked().connect(
-        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
-                                                                        &dv_full_display_widget::set_selection_type), 
-                                                          dv_full_display_widget::North_West));
+        sigc::bind<dv_full_display_widget::SelectionType>(
+            sigc::mem_fun(display_, 
+                          &dv_full_display_widget::set_selection_type), 
+            dv_full_display_widget::North_West));
     set_selection_nw_button_.show();
 
+    set_selection_ne_button_.set_mode(/*draw_indicator=*/false);
     set_selection_ne_button_.signal_clicked().connect(
-        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
-                                                                        &dv_full_display_widget::set_selection_type), 
-                                                          dv_full_display_widget::North_East));
+        sigc::bind<dv_full_display_widget::SelectionType>(
+            sigc::mem_fun(display_, 
+                          &dv_full_display_widget::set_selection_type), 
+            dv_full_display_widget::North_East));
     set_selection_ne_button_.show();
 
-    set_selection_se_button_.signal_clicked().connect(
-        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
-                                                                        &dv_full_display_widget::set_selection_type), 
-                                                          dv_full_display_widget::South_East));
-    set_selection_se_button_.show();
-
-    set_selection_sw_button_.signal_clicked().connect(
-        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
-                                                                        &dv_full_display_widget::set_selection_type), 
-                                                          dv_full_display_widget::South_West));
-    set_selection_sw_button_.show();
-
+    set_selection_center_button_.set_mode(/*draw_indicator=*/false);
     set_selection_center_button_.signal_clicked().connect(
-        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
-                                                                        &dv_full_display_widget::set_selection_type), 
-                                                          dv_full_display_widget::Center));
+        sigc::bind<dv_full_display_widget::SelectionType>(
+            sigc::mem_fun(display_, 
+                          &dv_full_display_widget::set_selection_type), 
+            dv_full_display_widget::Center));
     set_selection_center_button_.show();
 
-    selection_type_box_.pack_start(set_selection_nw_button_, Gtk::PACK_EXPAND_WIDGET);
-    selection_type_box_.pack_start(set_selection_ne_button_, Gtk::PACK_EXPAND_WIDGET);
-    selection_type_box_.pack_start(set_selection_se_button_, Gtk::PACK_EXPAND_WIDGET);
-    selection_type_box_.pack_start(set_selection_sw_button_, Gtk::PACK_EXPAND_WIDGET);
-    selection_type_box_.pack_start(set_selection_center_button_, Gtk::PACK_EXPAND_WIDGET);
-    selection_type_box_.show();
+    set_selection_se_button_.set_mode(/*draw_indicator=*/false);
+    set_selection_se_button_.signal_clicked().connect(
+        sigc::bind<dv_full_display_widget::SelectionType>(
+            sigc::mem_fun(display_, 
+                          &dv_full_display_widget::set_selection_type), 
+            dv_full_display_widget::South_East));
+    set_selection_se_button_.show();
+
+    set_selection_sw_button_.set_mode(/*draw_indicator=*/false);
+    set_selection_sw_button_.signal_clicked().connect(
+        sigc::bind<dv_full_display_widget::SelectionType>(
+            sigc::mem_fun(display_, 
+                          &dv_full_display_widget::set_selection_type), 
+            dv_full_display_widget::South_West));
+    set_selection_sw_button_.show();
+
+    pip_selection_lower_box_.pack_start(set_selection_nw_button_, Gtk::PACK_EXPAND_WIDGET);
+    pip_selection_lower_box_.pack_start(set_selection_ne_button_, Gtk::PACK_EXPAND_WIDGET);
+    pip_selection_lower_box_.pack_start(set_selection_center_button_, Gtk::PACK_EXPAND_WIDGET);
+    pip_selection_lower_box_.pack_start(set_selection_sw_button_, Gtk::PACK_EXPAND_WIDGET);
+    pip_selection_lower_box_.pack_start(set_selection_se_button_, Gtk::PACK_EXPAND_WIDGET);
+    pip_selection_lower_box_.show();
+
+    pip_box_.pack_start(pip_selection_upper_box_, Gtk::PACK_SHRINK);
+    pip_box_.pack_start(pip_selection_lower_box_, Gtk::PACK_SHRINK);
+    pip_box_.set_sensitive(false);
+    pip_box_.show_all();
 
     meter_sep_.show();
 
     vu_meter_.show();
 
+    display_.signal_updated_selection().connect(
+        sigc::mem_fun(this, &mixer_window::on_updated_selection));
     display_.show();
 
     osd_.add(display_);
@@ -251,12 +286,12 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
     command_box_.pack_start(command_sep_, Gtk::PACK_SHRINK);
     command_box_.pack_start(none_button_, Gtk::PACK_SHRINK);
     command_box_.pack_start(pip_button_, Gtk::PACK_SHRINK);
-    command_box_.pack_start(apply_button_, Gtk::PACK_SHRINK);
     command_box_.pack_start(fade_button_, Gtk::PACK_SHRINK);
     command_box_.pack_start(fade_value_, Gtk::PACK_SHRINK);
     command_box_.pack_start(progress_, Gtk::PACK_SHRINK);
+    command_box_.pack_start(apply_button_, Gtk::PACK_SHRINK);
     command_box_.pack_start(switch_a_b_button_, Gtk::PACK_SHRINK);
-    command_box_.pack_start(selection_type_box_, Gtk::PACK_SHRINK);
+    command_box_.pack_start(pip_box_, Gtk::PACK_SHRINK);
     command_box_.pack_start(meter_sep_, Gtk::PACK_EXPAND_PADDING);
     command_box_.pack_start(vu_meter_, Gtk::PACK_EXPAND_WIDGET);
     command_box_.show();
@@ -280,8 +315,22 @@ mixer_window::~mixer_window()
     osd_.remove(display_);
 }
 
+void mixer_window::on_updated_selection(dv_full_display_widget::SelectionType sel_type)
+{
+    printf("Selection has been updated! (sel_type=%d)\n", sel_type);
+    pip_button_.set_sensitive(true);
+    pip_button_.set_active(true);
+    pip_pending_ = true;
+    apply_button_.set_sensitive(true);
+}
+
 void mixer_window::cancel_effect()
 {
+    // we need to check the radio button status because we're signalled every toggle,
+    // not only activation.
+    if (! none_button_.get_active())
+        return;
+
     pip_pending_ = false;
     pip_active_ = false;
     fade_pending_ = false;
@@ -293,13 +342,20 @@ void mixer_window::cancel_effect()
 
 void mixer_window::begin_pic_in_pic()
 {
-    pip_pending_ = true;
+    if (! pip_button_.get_active())
+        return;
+
+    printf("begin pic in pic\n");
     display_.set_selection_enabled(true);
+    pip_pending_ = true;
     apply_button_.set_sensitive(true);
 }
 
 void mixer_window::begin_fade()
 {
+    if (! fade_button_.get_active())
+        return;
+
     fade_pending_ = true;
     fade_value_.set_sensitive(true);
     // pic-in-pic doesn't actually work well with fade ATM, but at least try to
@@ -508,6 +564,7 @@ bool mixer_window::update(Glib::IOCondition) throw()
 	pip_button_.set_sensitive(count >= 2);
 	fade_button_.set_sensitive(count >= 2);
         switch_a_b_button_.set_sensitive(count >= 2);
+	pip_box_.set_sensitive(count >= 2);
 
 	// Update the thumbnail displays of sources.  If a new mixed frame
 	// arrives while we were doing this, return to the event loop.
