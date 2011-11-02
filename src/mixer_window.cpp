@@ -75,6 +75,13 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
       fade_value_(300, 15000, 100),
       apply_button_("gtk-apply"),
       switch_a_b_button_(gettext("Switch A/B")),
+      //test_set_selection_pip_(gettext("Test selection")),
+      selection_type_box_(true, 0),
+      set_selection_nw_button_(gettext("NW")),
+      set_selection_ne_button_(gettext("NE")),
+      set_selection_se_button_(gettext("SE")),
+      set_selection_sw_button_(gettext("SW")),
+      set_selection_center_button_(gettext("C")),
       vu_meter_(-56, 0),
       pri_video_source_id_(0),
       sec_video_source_id_(0),
@@ -181,6 +188,43 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
     switch_a_b_button_.set_sensitive(false);
     switch_a_b_button_.show();
 
+    set_selection_nw_button_.signal_clicked().connect(
+        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
+                                                                        &dv_full_display_widget::set_selection_type), 
+                                                          dv_full_display_widget::North_West));
+    set_selection_nw_button_.show();
+
+    set_selection_ne_button_.signal_clicked().connect(
+        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
+                                                                        &dv_full_display_widget::set_selection_type), 
+                                                          dv_full_display_widget::North_East));
+    set_selection_ne_button_.show();
+
+    set_selection_se_button_.signal_clicked().connect(
+        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
+                                                                        &dv_full_display_widget::set_selection_type), 
+                                                          dv_full_display_widget::South_East));
+    set_selection_se_button_.show();
+
+    set_selection_sw_button_.signal_clicked().connect(
+        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
+                                                                        &dv_full_display_widget::set_selection_type), 
+                                                          dv_full_display_widget::South_West));
+    set_selection_sw_button_.show();
+
+    set_selection_center_button_.signal_clicked().connect(
+        sigc::bind<dv_full_display_widget::SelectionType>(sigc::mem_fun(display_, 
+                                                                        &dv_full_display_widget::set_selection_type), 
+                                                          dv_full_display_widget::Center));
+    set_selection_center_button_.show();
+
+    selection_type_box_.pack_start(set_selection_nw_button_, Gtk::PACK_EXPAND_WIDGET);
+    selection_type_box_.pack_start(set_selection_ne_button_, Gtk::PACK_EXPAND_WIDGET);
+    selection_type_box_.pack_start(set_selection_se_button_, Gtk::PACK_EXPAND_WIDGET);
+    selection_type_box_.pack_start(set_selection_sw_button_, Gtk::PACK_EXPAND_WIDGET);
+    selection_type_box_.pack_start(set_selection_center_button_, Gtk::PACK_EXPAND_WIDGET);
+    selection_type_box_.show();
+
     meter_sep_.show();
 
     vu_meter_.show();
@@ -212,6 +256,7 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
     command_box_.pack_start(fade_value_, Gtk::PACK_SHRINK);
     command_box_.pack_start(progress_, Gtk::PACK_SHRINK);
     command_box_.pack_start(switch_a_b_button_, Gtk::PACK_SHRINK);
+    command_box_.pack_start(selection_type_box_, Gtk::PACK_SHRINK);
     command_box_.pack_start(meter_sep_, Gtk::PACK_EXPAND_PADDING);
     command_box_.pack_start(vu_meter_, Gtk::PACK_EXPAND_WIDGET);
     command_box_.show();

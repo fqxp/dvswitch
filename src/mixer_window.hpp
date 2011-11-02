@@ -88,6 +88,12 @@ private:
     Gtk::Button apply_button_;
     Gtk::ProgressBar progress_;
     Gtk::Button switch_a_b_button_;
+    Gtk::HBox selection_type_box_;
+    Gtk::Button set_selection_nw_button_;
+    Gtk::Button set_selection_ne_button_;
+    Gtk::Button set_selection_se_button_;
+    Gtk::Button set_selection_sw_button_;
+    Gtk::Button set_selection_center_button_;
     Gtk::HSeparator meter_sep_;
     vu_meter vu_meter_;
     status_overlay osd_;

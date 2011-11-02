@@ -63,9 +63,21 @@ private:
 class dv_full_display_widget : public dv_display_widget
 {
 public:
+    enum SelectionType {
+        Manual,
+        Center,
+        North_West,
+        North_East,
+        South_East,
+        South_West,
+    };
+
     dv_full_display_widget();
 
     void set_selection_enabled(bool);
+    void set_selection_type(SelectionType sel_type);
+    //void set_selection();
+    void set_selection();
     rectangle get_selection();
 
 private:
@@ -99,6 +111,8 @@ private:
     bool sel_in_progress_;
     int sel_start_x_, sel_start_y_;
     rectangle selection_;
+    SelectionType sel_type_;
+    int sel_width_;
 };
 
 class dv_thumb_display_widget : public dv_display_widget

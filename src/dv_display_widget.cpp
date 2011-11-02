@@ -262,7 +262,9 @@ dv_full_display_widget::dv_full_display_widget()
       // pixel aspect ratio of 59:54.
       dest_width_(767), dest_height_(576),
       sel_enabled_(false),
-      sel_in_progress_(false)
+      sel_in_progress_(false),
+      sel_type_(Manual),
+      sel_width_(160)   // default selection width
 {
     std::memset(&source_region_, 0, sizeof(source_region_));
     std::memset(&selection_, 0, sizeof(selection_));
@@ -293,6 +295,52 @@ void dv_full_display_widget::set_selection_enabled(bool flag)
 	    remove_modal_grab();
 	}
     }
+
+    queue_draw();
+}
+
+void dv_full_display_widget::set_selection_type(SelectionType sel_type)
+{
+    int frame_width = source_region_.right - source_region_.left;
+    int frame_height = source_region_.bottom - source_region_.top;
+    float aspect_ratio = ((float) frame_width) / frame_height;
+    printf("aspect ratio: %f\n", aspect_ratio);
+    printf("source_region: left/right, top/bottom %d/%d, %d/%d\n", 
+           source_region_.left, source_region_.right,
+           source_region_.top, source_region_.bottom);
+    printf("frame width, height: %d, %d\n", frame_width, frame_height);
+    int padding_x = 10;
+    int padding_y = 10;
+    switch (sel_type) {
+        case Manual:
+            break;
+        case Center:
+            selection_.left = padding_x + (source_region_.right - sel_width_) / 2;
+            selection_.top = padding_y + (source_region_.bottom - sel_width_ / aspect_ratio) / 2;
+            break;
+        case North_West:
+            selection_.left = padding_x + source_region_.left;
+            selection_.top = padding_y + source_region_.top;
+            break;
+        case North_East:
+            selection_.left = source_region_.right - padding_x - sel_width_;
+            selection_.top = padding_y + source_region_.top;
+            break;
+        case South_East:
+            selection_.left = source_region_.right - padding_x - sel_width_;
+            selection_.top = source_region_.bottom - padding_y - sel_width_ / aspect_ratio;
+            break;
+        case South_West:
+            selection_.left = padding_x + source_region_.left;
+            selection_.top = source_region_.bottom - padding_y - sel_width_ / aspect_ratio;
+            break;
+    }
+
+    selection_.right = selection_.left + sel_width_;
+    selection_.bottom = selection_.top + sel_width_ / aspect_ratio;
+
+    sel_type_ = sel_type;
+    sel_enabled_ = true;
 
     queue_draw();
 }
