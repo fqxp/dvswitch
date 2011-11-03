@@ -101,13 +101,14 @@ private:
     Gtk::RadioButton set_selection_ne_button_;
     Gtk::RadioButton set_selection_se_button_;
     Gtk::RadioButton set_selection_sw_button_;
-    Gtk::RadioButton set_selection_center_button_;
     Gtk::RadioButton set_selection_dummy_button_;
     Gtk::HSeparator meter_sep_;
     vu_meter vu_meter_;
     status_overlay osd_;
     dv_full_display_widget display_;
     dv_selector_widget selector_;
+
+    Gdk::Color pending_color_;
 
     mixer::source_id pri_video_source_id_, sec_video_source_id_;
     bool pip_active_;

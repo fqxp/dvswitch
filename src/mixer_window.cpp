@@ -84,7 +84,6 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
       set_selection_ne_button_(selection_group_, gettext("NE")),
       set_selection_se_button_(selection_group_, gettext("SE")),
       set_selection_sw_button_(selection_group_, gettext("SW")),
-      set_selection_center_button_(selection_group_, gettext("C")),
       set_selection_dummy_button_(selection_group_, gettext("dummy")),
       vu_meter_(-56, 0),
       pri_video_source_id_(0),
@@ -180,6 +179,10 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
 				  Gtk::AccelFlags(0));
     apply_button_.show();
 
+    Glib::RefPtr<Gdk::Colormap> colormap = Gdk::Colormap::get_system();
+    pending_color_.set_rgb_p(1.0, 1.0, 0);
+    colormap->alloc_color(pending_color_);
+
     progress_.show();
 
     switch_a_b_button_.signal_clicked().connect(
@@ -212,6 +215,11 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
             sigc::mem_fun(display_, 
                           &dv_full_display_widget::set_selection_type), 
             dv_full_display_widget::North_West));
+    set_selection_nw_button_.add_accelerator("activate",
+                                             get_accel_group(),
+                                             GDK_KP_7,
+                                             Gdk::ModifierType(0),
+                                             Gtk::AccelFlags(0));
     set_selection_nw_button_.show();
 
     set_selection_ne_button_.set_mode(/*draw_indicator=*/false);
@@ -220,15 +228,12 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
             sigc::mem_fun(display_, 
                           &dv_full_display_widget::set_selection_type), 
             dv_full_display_widget::North_East));
+    set_selection_ne_button_.add_accelerator("activate",
+                                             get_accel_group(),
+                                             GDK_KP_9,
+                                             Gdk::ModifierType(0),
+                                             Gtk::AccelFlags(0));
     set_selection_ne_button_.show();
-
-    set_selection_center_button_.set_mode(/*draw_indicator=*/false);
-    set_selection_center_button_.signal_clicked().connect(
-        sigc::bind<dv_full_display_widget::SelectionType>(
-            sigc::mem_fun(display_, 
-                          &dv_full_display_widget::set_selection_type), 
-            dv_full_display_widget::Center));
-    set_selection_center_button_.show();
 
     set_selection_se_button_.set_mode(/*draw_indicator=*/false);
     set_selection_se_button_.signal_clicked().connect(
@@ -236,6 +241,11 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
             sigc::mem_fun(display_, 
                           &dv_full_display_widget::set_selection_type), 
             dv_full_display_widget::South_East));
+    set_selection_se_button_.add_accelerator("activate",
+                                             get_accel_group(),
+                                             GDK_KP_3,
+                                             Gdk::ModifierType(0),
+                                             Gtk::AccelFlags(0));
     set_selection_se_button_.show();
 
     set_selection_sw_button_.set_mode(/*draw_indicator=*/false);
@@ -244,11 +254,15 @@ mixer_window::mixer_window(mixer & mixer, connector & connector)
             sigc::mem_fun(display_, 
                           &dv_full_display_widget::set_selection_type), 
             dv_full_display_widget::South_West));
+    set_selection_sw_button_.add_accelerator("activate",
+                                             get_accel_group(),
+                                             GDK_KP_1,
+                                             Gdk::ModifierType(0),
+                                             Gtk::AccelFlags(0));
     set_selection_sw_button_.show();
 
     pip_selection_lower_box_.pack_start(set_selection_nw_button_, Gtk::PACK_EXPAND_WIDGET);
     pip_selection_lower_box_.pack_start(set_selection_ne_button_, Gtk::PACK_EXPAND_WIDGET);
-    pip_selection_lower_box_.pack_start(set_selection_center_button_, Gtk::PACK_EXPAND_WIDGET);
     pip_selection_lower_box_.pack_start(set_selection_sw_button_, Gtk::PACK_EXPAND_WIDGET);
     pip_selection_lower_box_.pack_start(set_selection_se_button_, Gtk::PACK_EXPAND_WIDGET);
     pip_selection_lower_box_.show();
@@ -320,8 +334,9 @@ void mixer_window::on_updated_selection(dv_full_display_widget::SelectionType se
     printf("Selection has been updated! (sel_type=%d)\n", sel_type);
     pip_button_.set_sensitive(true);
     pip_button_.set_active(true);
-    pip_pending_ = true;
-    apply_button_.set_sensitive(true);
+    //pip_pending_ = true;
+    //apply_button_.set_sensitive(true);
+    this->begin_pic_in_pic();
 }
 
 void mixer_window::cancel_effect()
@@ -338,14 +353,14 @@ void mixer_window::cancel_effect()
     display_.set_selection_enabled(false);
     apply_button_.set_sensitive(false);
     fade_value_.set_sensitive(false);
+    pip_button_.unset_fg(Gtk::STATE_ACTIVE);
 }
 
 void mixer_window::begin_pic_in_pic()
 {
-    if (! pip_button_.get_active())
-        return;
-
     printf("begin pic in pic\n");
+    pip_button_.modify_fg(Gtk::STATE_ACTIVE, pending_color_);
+
     display_.set_selection_enabled(true);
     pip_pending_ = true;
     apply_button_.set_sensitive(true);
@@ -399,6 +414,7 @@ void mixer_window::apply_effect()
 	    mixer_.create_video_mix_pic_in_pic(
 		pri_video_source_id_, sec_video_source_id_, region));
 	display_.set_selection_enabled(false);
+        pip_button_.unset_fg(Gtk::STATE_ACTIVE);
     }
     apply_button_.set_sensitive(false);
 }
